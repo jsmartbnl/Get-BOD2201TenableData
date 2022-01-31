@@ -104,7 +104,7 @@ Write-Progress -Activity "Getting CISA Known Exploited Vulnerabilities found by 
 $analysis = Get-TNAnalysis -Filter $filters -SourceType cumulative -SortBy  score -Tool sumcve
 
 $BOD2201_ByCVE = @()
-$BOD2201_ByIP = @{}
+$BOD2201_ByHost = @{}
 
 foreach ($foundCVE in ($analysis)) {
     $duedate = $Vulnerabilities | Where-Object {$_.cveid -eq $foundCVE.cveID} | Select-Object -ExpandProperty DueDate 
@@ -134,10 +134,10 @@ foreach ($foundCVE in ($analysis)) {
         $BOD2201_ByCVE += $cvedetail
 
         foreach ($ip in $ipdata) {
-            if (-not $BOD2201_ByIP[$ip.dnsname]) {
-                $BOD2201_ByIP[$ip.dnsname] = @()
+            if (-not $BOD2201_ByHost[$ip.dnsname]) {
+                $BOD2201_ByHost[$ip.dnsname] = @()
             }
-            $BOD2201_ByIP[$ip.dnsname] += [PSCustomObject]@{
+            $BOD2201_ByHost[$ip.dnsname] += [PSCustomObject]@{
                 cveID = $foundCVE.cveID
                 duedate = $duedate
                 overdue = ((get-date) -gt (get-date $duedate))
@@ -148,7 +148,7 @@ foreach ($foundCVE in ($analysis)) {
 
 $CVECount =  $BOD2201_ByCVE.Count
 $OverDueCVEs = $BOD2201_ByCVE | where-object {$_.overdue} | Measure-Object | Select-Object -ExpandProperty Count 
-$IPCount = $BOD2201_ByIP.Keys.Count
+$IPCount = $BOD2201_ByHost.Keys.Count
 
 Write-Verbose "CVEs found that are on the CISA Known Exploited Vulnerabilities list: $CVECount"
 Write-Verbose "CVEs found that are on the CISA Known Exploited Vulnerabilities list, and are overdue: $OverDueCVEs"
@@ -161,5 +161,5 @@ Write-Verbose "IPs with CVEs from the CISA Known Exploited Vulnerabilities list:
     OverDueCVEs = $OverDueCVEs
     IPCount = $IPCount
     CVEs = $BOD2201_ByCVE | Sort-Object duedate 
-    IPs = $BOD2201_ByIP
+    Hosts = $BOD2201_ByHost
 }
