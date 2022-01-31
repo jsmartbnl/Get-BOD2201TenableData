@@ -80,7 +80,7 @@ if (-not (Get-TNSession)) {
     Write-Error "Connect to server with Connect-TNServer first." -ErrorAction Stop
 }
 
-Write-Progress -Activity "Getting List of CVEs from CISA"
+Write-Progress -Activity "Getting CISA Known Exploited Vulnerabilities."
 $DataURL = 'https://www.cisa.gov/sites/default/files/feeds/known_exploited_vulnerabilities.json'
 $VulnerabilityData = Invoke-WebRequest -Uri $DataURL
 $Vulnerabilities = $VulnerabilityData | ConvertFrom-Json | Select-Object -expandproperty Vulnerabilities
@@ -99,6 +99,7 @@ if ($AssetName) {
 }
 
 $filters = New-BOD2201Filter -CVEs $Vulnerabilities.cveid -AssetID $Asset.ID
+Write-Progress -Activity "Getting CISA Known Exploited Vulnerabilities found by the scanner."
 $analysis = Get-TNAnalysis -Filter $filters -SourceType cumulative -SortBy  score -Tool sumcve
 
 $BOD2201_ByCVE = @()
@@ -148,9 +149,9 @@ $CVECount =  $BOD2201_ByCVE.Count
 $OverDueCVEs = $BOD2201_ByCVE | where-object {$_.overdue} | Measure-Object | Select-Object -ExpandProperty Count 
 $IPCount = $BOD2201_ByIP.Keys.Count
 
-Write-Verbose "CVEs found that are on the BOD22-01 list: $CVECount"
-Write-Verbose "CVEs found that are on the BOD22-01 list, and are overdue: $OverDueCVEs"
-Write-Verbose "IPs with CVEs from the OMB22-01 list: $IPCount"
+Write-Verbose "CVEs found that are on the CISA Known Exploited Vulnerabilities list: $CVECount"
+Write-Verbose "CVEs found that are on the CISA Known Exploited Vulnerabilities list, and are overdue: $OverDueCVEs"
+Write-Verbose "IPs with CVEs from the CISA Known Exploited Vulnerabilities list: $IPCount"
 
 
 [PSCustomObject]@{
