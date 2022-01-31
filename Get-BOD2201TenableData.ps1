@@ -90,10 +90,11 @@ Write-Verbose "Got $($Vulnerabilities.count) vulnerabilities with due dates."
 if ($AssetName) {
     $Asset = Get-TNAsset -Name $AssetName
     if (-not $Asset) {
-        Write-Warning "Asset $AssetName not found.  Returning data for all assets."
+        Write-Warning "Asset '$AssetName' not found.  Returning data for all assets."
+        $AssetName = '' # Make sure it's not in the output
     }
     else {
-        Write-Verbose "Filtering to Asset $AssetName with ID $($Asset.ID)"
+        Write-Verbose "Filtering to Asset '$AssetName' with ID '$($Asset.ID)'"
     }
     
 }
