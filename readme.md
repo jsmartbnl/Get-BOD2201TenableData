@@ -12,12 +12,14 @@ Vulnerability data including the due date is sourced from the [JSON version](htt
 
 ``` powershell
 Connect-TNServer #remember to add your connection information
-.\Get-BOD2201TenableData.ps1
+$Vulnerabilities = .\Get-BOD2201TenableData.ps1 -Verbose
+$Vulnerabilities
 ```
 
-### Connect to tenable and get a list of all unmitigated vulnerabilities specified in BOD 22-01 that appear in a given asset
+### Show all hosts with Known Exploited Vulnerabilities that are past the "due date"
 
 ``` powershell
 Connect-TNServer #remember to add your connection information
-.\Get-BOD2201TenableData.ps1 -AssetName "your asset name here"
+$Vulnerabilities = .\Get-BOD2201TenableData.ps1 -AssetName "your asset name here" -Verbose
+$Vulnerabilities.CVEs | Where-Object {$_.overdue} | Select-Object -ExpandProperty Hosts
 ```
