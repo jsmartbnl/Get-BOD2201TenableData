@@ -128,7 +128,7 @@ foreach ($foundCVE in ($analysis)) {
             total = $foundCVE.total
             hostTotal = $foundCVE.hostTotal
             overdue = ((get-date) -gt (get-date $duedate))
-            ipdata = $ipdata | select-object DnsName, NetBiosName, IP, MacAddress
+            hosts = $ipdata | select-object DnsName, NetBiosName, IP, MacAddress
         }
 
         $BOD2201_ByCVE += $cvedetail
