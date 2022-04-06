@@ -2,7 +2,7 @@
 
 <#PSScriptInfo
 
-.VERSION 1.0
+.VERSION 1.1
 
 .GUID d6fa5a44-8b2f-4f28-84d6-70344622ecf8
 
@@ -38,7 +38,11 @@ Gets information from a tennable.sc or nessus instance regarding the vulnerabili
 param (
     [Parameter()]
     [string]
-    $AssetName
+    $AssetName, 
+    #Number of CVEs to query in a single batch from Tenable
+    [Parameter()]
+    [int]
+    $CVEQuerySize = 250
 )
 
 function New-BOD2201Filter {
@@ -99,9 +103,20 @@ if ($AssetName) {
     
 }
 
-$filters = New-BOD2201Filter -CVEs $Vulnerabilities.cveid -AssetID $Asset.ID
-Write-Progress -Activity "Getting CISA Known Exploited Vulnerabilities found by the scanner."
-$analysis = Get-TNAnalysis -Filter $filters -SourceType cumulative -SortBy  score -Tool sumcve
+
+$CVEBatches = for ($i=0; $i -lt $Vulnerabilities.cveid.length; $i+=$CVEQuerySize){ ,($Vulnerabilities.cveid[$i .. ($i+$CVEQuerySize)])}
+
+$i=0
+$analysis = @()
+foreach ($CVEBatch in $CVEBatches) {
+    $i++
+    $filters = New-BOD2201Filter -CVEs $CVEBatch  -AssetID $Asset.ID 
+    Write-Progress -Activity "Getting CISA Known Exploited Vulnerabilities found by the scanner." -PercentComplete (100 * $i / $CVEBatches.Count)
+    $analysis += Get-TNAnalysis -Filter $filters -SourceType cumulative -SortBy  score -Tool sumcve
+}
+
+
+
 
 $BOD2201_ByCVE = @()
 $BOD2201_ByHost = @{}
